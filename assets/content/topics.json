@@ -1,0 +1,38 @@
+[
+  {
+    "id": "daily-life",
+    "title": "Daily Life",
+    "description": "Thói quen, sinh hoạt và cuộc sống thường ngày.",
+    "colorToken": "clay",
+    "levelRange": "A2-B1",
+    "order": 1,
+    "comingSoon": false
+  },
+  {
+    "id": "business",
+    "title": "Business",
+    "description": "Họp hành, email và giao tiếp nơi công sở.",
+    "colorToken": "teal",
+    "levelRange": "B1-B2",
+    "order": 2,
+    "comingSoon": false
+  },
+  {
+    "id": "travel",
+    "title": "Travel",
+    "description": "Sân bay, khách sạn và hỏi đường khi đi xa.",
+    "colorToken": "violet",
+    "levelRange": "A2-B1",
+    "order": 3,
+    "comingSoon": true
+  },
+  {
+    "id": "academic",
+    "title": "Academic",
+    "description": "Bài giảng, thuyết trình và văn phong học thuật.",
+    "colorToken": "amber",
+    "levelRange": "B2-C1",
+    "order": 4,
+    "comingSoon": true
+  }
+]
