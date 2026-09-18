@@ -42,6 +42,7 @@ abstract final class Strings {
   static const seekForward = 'Tiến 10 giây';
   static const openSettings = 'Cài đặt buổi luyện';
   static String wpmLabel(int wpm) => '$wpm từ/phút';
+  static String passageIndex(int order) => 'Bài ${order.toString().padLeft(2, '0')}';
 
   // Sheet cài đặt
   static const sheetTitle = 'Cài đặt buổi luyện';
