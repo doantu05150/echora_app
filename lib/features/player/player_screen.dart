@@ -5,11 +5,14 @@ import '../../core/formatting.dart';
 import '../../core/strings.dart';
 import '../../data/providers.dart';
 import '../../ui/theme/app_theme.dart';
+import 'display_mode.dart';
 import 'player_controller.dart';
 import 'session_settings_sheet.dart';
 import 'playback/playback_clock.dart';
 import 'playback/playback_timeline.dart';
 import 'widgets/clock_builder.dart';
+import 'widgets/karaoke_text_view.dart';
+import 'widgets/line_text_view.dart';
 import 'widgets/scroll_text_view.dart';
 
 class PlayerScreen extends ConsumerWidget {
@@ -66,12 +69,26 @@ class _PlayerBody extends ConsumerWidget {
         Expanded(
           child: ClockBuilder(
             clock: controller.clock,
-            builder: (context, elapsedMs) => ScrollTextView(
-              timeline: state.timeline,
-              elapsedMs: elapsedMs,
-              fontSizeSp: state.fontSizeSp,
-              accent: accent,
-            ),
+            builder: (context, elapsedMs) => switch (state.displayMode) {
+              DisplayMode.scroll => ScrollTextView(
+                timeline: state.timeline,
+                elapsedMs: elapsedMs,
+                fontSizeSp: state.fontSizeSp,
+                accent: accent,
+              ),
+              DisplayMode.line => LineTextView(
+                timeline: state.timeline,
+                elapsedMs: elapsedMs,
+                fontSizeSp: state.fontSizeSp,
+                accent: accent,
+              ),
+              DisplayMode.karaoke => KaraokeTextView(
+                timeline: state.timeline,
+                elapsedMs: elapsedMs,
+                fontSizeSp: state.fontSizeSp,
+                accent: accent,
+              ),
+            },
           ),
         ),
         Padding(
