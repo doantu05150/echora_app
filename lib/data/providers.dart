@@ -24,3 +24,11 @@ final topicProvider = FutureProvider.family<Topic?, String>((ref, id) async {
 final passageProvider = FutureProvider.family<Passage?, String>(
   (ref, id) => ref.watch(contentRepositoryProvider).getPassage(id),
 );
+
+/// Danh sách bài của một topic, `durationMin` null = không lọc.
+final passagesProvider =
+    FutureProvider.family<List<Passage>, ({String topicId, int? durationMin})>(
+      (ref, key) => ref
+          .watch(contentRepositoryProvider)
+          .getPassages(key.topicId, durationMin: key.durationMin),
+    );
