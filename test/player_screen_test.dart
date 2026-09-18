@@ -1,3 +1,4 @@
+import 'package:echora/core/screen_wakelock.dart';
 import 'package:echora/data/content_repository.dart';
 import 'package:echora/data/models/passage.dart';
 import 'package:echora/data/models/topic.dart';
@@ -8,6 +9,7 @@ import 'package:echora/ui/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const _topic = Topic(
   id: 'daily-life',
@@ -33,6 +35,13 @@ const _passage = Passage(
   ],
 );
 
+class _FakeWakelock implements ScreenWakelock {
+  bool enabled = false;
+
+  @override
+  Future<void> setEnabled(bool value) async => enabled = value;
+}
+
 class _FakeRepository implements ContentRepository {
   @override
   Future<List<Topic>> getTopics() async => const [_topic];
@@ -46,10 +55,17 @@ class _FakeRepository implements ContentRepository {
       id == _passage.id ? _passage : null;
 }
 
+late _FakeWakelock _wakelock;
+
 Future<void> _pumpPlayer(WidgetTester tester) async {
+  SharedPreferences.setMockInitialValues({});
+  _wakelock = _FakeWakelock();
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [contentRepositoryProvider.overrideWithValue(_FakeRepository())],
+      overrides: [
+        contentRepositoryProvider.overrideWithValue(_FakeRepository()),
+        screenWakelockProvider.overrideWithValue(_wakelock),
+      ],
       child: MaterialApp(
         theme: AppTheme.light(),
         home: const PlayerScreen(passageId: 'daily-life-01'),
@@ -110,6 +126,40 @@ void main() {
 
     controller.seekBy(const Duration(seconds: 10));
     expect(controller.clock.elapsedMs, timeline.sentences.last.startMs);
+  });
+
+  testWidgets('the settings sheet applies a speed preset immediately', (
+    tester,
+  ) async {
+    await _pumpPlayer(tester);
+
+    await tester.tap(find.byIcon(Icons.tune_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cài đặt buổi luyện'), findsOneWidget);
+    await tester.tap(find.text('Nhanh'));
+    await tester.pumpAndSettle();
+
+    // Sheet vẫn mở mà cả sheet lẫn Player phía sau đã đổi số:
+    // không phải bấm Áp dụng mới thấy hiệu quả.
+    expect(find.text('110 từ/phút'), findsNWidgets(2));
+
+    await tester.tap(find.text('Áp dụng'));
+    await tester.pumpAndSettle();
+    expect(find.text('1.2×'), findsOneWidget);
+  });
+
+  testWidgets('the screen stays awake only while playing', (tester) async {
+    await _pumpPlayer(tester);
+    expect(_wakelock.enabled, isFalse);
+
+    await tester.tap(find.byIcon(Icons.play_arrow_rounded));
+    await tester.pump();
+    expect(_wakelock.enabled, isTrue);
+
+    await tester.tap(find.byIcon(Icons.pause_rounded));
+    await tester.pump();
+    expect(_wakelock.enabled, isFalse);
   });
 
   testWidgets('changing wpm keeps the reading position', (tester) async {

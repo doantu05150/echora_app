@@ -6,6 +6,7 @@ import '../../core/strings.dart';
 import '../../data/providers.dart';
 import '../../ui/theme/app_theme.dart';
 import 'player_controller.dart';
+import 'session_settings_sheet.dart';
 import 'playback/playback_clock.dart';
 import 'playback/playback_timeline.dart';
 import 'widgets/clock_builder.dart';
@@ -90,7 +91,11 @@ class _PlayerBody extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.lgPlus),
-              _Controls(controller: controller, wpm: state.wpm),
+              _Controls(
+                controller: controller,
+                wpm: state.wpm,
+                onOpenSettings: () => _openSettings(context, controller),
+              ),
               const SizedBox(height: AppSpacing.lgPlus),
               const _RecordingTeaser(),
             ],
@@ -99,6 +104,31 @@ class _PlayerBody extends ConsumerWidget {
       ],
     );
   }
+}
+
+void _openSettings(BuildContext context, PlayerController controller) {
+  showSessionSettingsSheet(
+    context,
+    builder: (context) => Consumer(
+      builder: (context, ref, _) {
+        final state = ref
+            .watch(playerControllerProvider(controller.passageId))
+            .requireValue;
+        return SessionSettingsSheet(
+          wpm: state.wpm,
+          preferredDurationMin: state.preferences.preferredDurationMin,
+          displayMode: state.displayMode,
+          fontSizeSp: state.fontSizeSp,
+          keepScreenOn: state.keepScreenOn,
+          onWpm: controller.setWpm,
+          onDuration: controller.setPreferredDurationMin,
+          onDisplayMode: controller.setDisplayMode,
+          onFontSize: controller.setFontSizeSp,
+          onKeepScreenOn: controller.setKeepScreenOn,
+        );
+      },
+    ),
+  );
 }
 
 class _TopBar extends StatelessWidget {
@@ -203,17 +233,23 @@ class _ProgressRow extends StatelessWidget {
 }
 
 class _Controls extends StatelessWidget {
-  const _Controls({required this.controller, required this.wpm});
+  const _Controls({
+    required this.controller,
+    required this.wpm,
+    required this.onOpenSettings,
+  });
 
   final PlayerController controller;
   final int wpm;
+  final VoidCallback onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _SpeedChip(wpm: wpm),
+        _SpeedChip(wpm: wpm, onTap: onOpenSettings),
         _SeekButton(
           icon: Icons.replay_10_rounded,
           tooltip: Strings.seekBack,
@@ -225,31 +261,44 @@ class _Controls extends StatelessWidget {
           tooltip: Strings.seekForward,
           onTap: () => controller.seekBy(const Duration(seconds: 10)),
         ),
-        const SizedBox(width: AppSize.iconButton),
+        SizedBox(
+          width: AppSize.iconButton,
+          height: AppSize.iconButton,
+          child: IconButton(
+            onPressed: onOpenSettings,
+            tooltip: Strings.openSettings,
+            icon: Icon(Icons.tune_rounded, color: colors.inkMuted),
+          ),
+        ),
       ],
     );
   }
 }
 
 class _SpeedChip extends StatelessWidget {
-  const _SpeedChip({required this.wpm});
+  const _SpeedChip({required this.wpm, required this.onTap});
 
   final int wpm;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Container(
-      height: AppSize.minTouchTarget,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.mdPlus),
-      decoration: BoxDecoration(
-        color: colors.surfaceMuted,
+    return Material(
+      color: colors.surfaceMuted,
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      child: Text(
-        formatMultiplier(multiplierOf(wpm)),
-        style: context.typography.label.copyWith(color: colors.ink),
+        child: Container(
+          height: AppSize.minTouchTarget,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.mdPlus),
+          child: Text(
+            formatMultiplier(multiplierOf(wpm)),
+            style: context.typography.label.copyWith(color: colors.ink),
+          ),
+        ),
       ),
     );
   }

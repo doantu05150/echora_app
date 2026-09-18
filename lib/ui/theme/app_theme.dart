@@ -37,6 +37,28 @@ abstract final class AppTheme {
         labelLarge: t.label,
         labelSmall: t.caption,
       ).apply(bodyColor: c.ink, displayColor: c.ink),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? c.surface
+              : c.inkFaint,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? c.violet.base
+              : c.surfaceMuted,
+        ),
+        trackOutlineColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? c.violet.base
+              : c.border,
+        ),
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: c.violet.base,
+        inactiveTrackColor: c.surfaceMuted,
+        thumbColor: c.violet.base,
+      ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: Color(0xFFFFFFFF),
         surfaceTintColor: Color(0x00000000),
