@@ -66,6 +66,9 @@ abstract final class Strings {
 
   // Profile
   static const profileTitle = 'Hồ sơ';
+  static const learnerName = 'Người học';
+  static const learnerInitial = 'N';
+  static const levelUnknown = 'Chưa có buổi luyện nào';
   static const statStreak = 'Chuỗi ngày';
   static const statMinutes = 'Phút đã luyện';
   static const statPassages = 'Bài đã học';

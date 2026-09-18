@@ -58,6 +58,73 @@ void main() {
     expect(await repository.mostRecentUnfinished(), isNull);
   });
 
+  Future<void> recordOn(DateTime day) => repository.recordSession(
+    PracticeSession(
+      passageId: 'daily-life-01',
+      startedAt: day,
+      durationSec: 180,
+      wpm: 90,
+      displayMode: DisplayMode.scroll,
+    ),
+  );
+
+  group('stats', () {
+    test('are zero with no sessions', () async {
+      final stats = await repository.stats();
+      expect(stats.streakDays, 0);
+      expect(stats.totalMinutes, 0);
+      expect(stats.passageCount, 0);
+    });
+
+    test('count minutes and distinct passages', () async {
+      final now = DateTime.now();
+      await recordOn(now);
+      await recordOn(now);
+      await repository.recordSession(
+        PracticeSession(
+          passageId: 'business-01',
+          startedAt: now,
+          durationSec: 120,
+          wpm: 110,
+          displayMode: DisplayMode.line,
+        ),
+      );
+
+      final stats = await repository.stats();
+      expect(stats.totalMinutes, 8);
+      expect(stats.passageCount, 2);
+    });
+
+    test('streak counts consecutive days back from today', () async {
+      final today = DateTime.now();
+      for (var i = 0; i < 3; i++) {
+        await recordOn(today.subtract(Duration(days: i)));
+      }
+
+      expect((await repository.stats()).streakDays, 3);
+    });
+
+    test('a missing day breaks the streak', () async {
+      final today = DateTime.now();
+      await recordOn(today);
+      await recordOn(today.subtract(const Duration(days: 2)));
+
+      expect((await repository.stats()).streakDays, 1);
+    });
+
+    test('yesterday still counts so the day is not lost mid-way', () async {
+      await recordOn(DateTime.now().subtract(const Duration(days: 1)));
+
+      expect((await repository.stats()).streakDays, 1);
+    });
+
+    test('a long gap ends the streak entirely', () async {
+      await recordOn(DateTime.now().subtract(const Duration(days: 5)));
+
+      expect((await repository.stats()).streakDays, 0);
+    });
+  });
+
   test('sessions come back newest first', () async {
     final now = DateTime(2026, 3, 1, 8);
     for (var i = 0; i < 3; i++) {

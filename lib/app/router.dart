@@ -36,7 +36,10 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: Routes.profile,
-              builder: (context, state) => const ProfileScreen(),
+              builder: (context, state) => ProfileScreen(
+                onOpenPassage: (passageId) =>
+                    context.push(Routes.player(passageId)),
+              ),
             ),
           ],
         ),

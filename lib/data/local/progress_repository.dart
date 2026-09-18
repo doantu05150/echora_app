@@ -57,6 +57,21 @@ class PracticeSession {
   );
 }
 
+@immutable
+class PracticeStats {
+  const PracticeStats({
+    required this.streakDays,
+    required this.totalSeconds,
+    required this.passageCount,
+  });
+
+  final int streakDays;
+  final int totalSeconds;
+  final int passageCount;
+
+  int get totalMinutes => totalSeconds ~/ 60;
+}
+
 class ProgressRepository {
   ProgressRepository(this._db);
 
@@ -139,6 +154,46 @@ class ProgressRepository {
       'wpm': session.wpm,
       'displayMode': session.displayMode.storageValue,
     });
+  }
+
+  Future<PracticeStats> stats() async {
+    final db = await _db.database;
+
+    final totals = await db.rawQuery(
+      'SELECT COALESCE(SUM(durationSec), 0) AS seconds, '
+      'COUNT(DISTINCT passageId) AS passages FROM ${Tables.session}',
+    );
+    final days = await db.rawQuery(
+      "SELECT DISTINCT date(startedAt / 1000, 'unixepoch', 'localtime') AS day "
+      'FROM ${Tables.session} ORDER BY day DESC',
+    );
+
+    return PracticeStats(
+      totalSeconds: totals.first['seconds']! as int,
+      passageCount: totals.first['passages']! as int,
+      streakDays: _streakFrom(
+        days.map((row) => DateTime.parse(row['day']! as String)).toList(),
+      ),
+    );
+  }
+
+  /// Số ngày liên tiếp gần nhất có ít nhất một buổi luyện. Chuỗi vẫn còn nếu
+  /// hôm nay chưa luyện nhưng hôm qua có — người học chưa mất chuỗi giữa ngày.
+  static int _streakFrom(List<DateTime> descendingDays) {
+    if (descendingDays.isEmpty) return 0;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final gapToLatest = today.difference(descendingDays.first).inDays;
+    if (gapToLatest > 1) return 0;
+
+    var streak = 1;
+    for (var i = 1; i < descendingDays.length; i++) {
+      final gap = descendingDays[i - 1].difference(descendingDays[i]).inDays;
+      if (gap != 1) break;
+      streak++;
+    }
+    return streak;
   }
 
   Future<List<PracticeSession>> recentSessions({int limit = 50}) async {

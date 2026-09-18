@@ -67,13 +67,14 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _Header extends StatelessWidget {
+class _Header extends ConsumerWidget {
   const _Header();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final now = DateTime.now();
+    final streak = ref.watch(practiceStatsProvider).value?.streakDays ?? 0;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +94,7 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        const _StreakChip(days: 0),
+        _StreakChip(days: streak),
       ],
     );
   }

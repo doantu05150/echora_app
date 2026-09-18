@@ -42,6 +42,26 @@ final recentSessionsProvider = FutureProvider<List<PracticeSession>>(
   (ref) => ref.watch(progressRepositoryProvider).recentSessions(),
 );
 
+final practiceStatsProvider = FutureProvider<PracticeStats>(
+  (ref) => ref.watch(progressRepositoryProvider).stats(),
+);
+
+/// Trình độ suy ra từ level của các bài đã luyện, không phải một hồ sơ riêng.
+final practisedLevelProvider = FutureProvider<String?>((ref) async {
+  final sessions = await ref.watch(recentSessionsProvider.future);
+  if (sessions.isEmpty) return null;
+
+  final counts = <String, int>{};
+  for (final session in sessions) {
+    final passage = await ref.watch(passageProvider(session.passageId).future);
+    if (passage == null) continue;
+    counts[passage.level] = (counts[passage.level] ?? 0) + 1;
+  }
+  if (counts.isEmpty) return null;
+
+  return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+});
+
 /// Giá trị mặc định cho buổi luyện. Player đọc một lần khi mở bài rồi tự giữ
 /// state của nó — nếu Player watch provider này thì mỗi lần đổi tốc độ sẽ
 /// dựng lại controller và mất tiến độ.
