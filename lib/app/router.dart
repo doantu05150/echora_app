@@ -26,6 +26,8 @@ final appRouter = GoRouter(
               path: Routes.home,
               builder: (context, state) => HomeScreen(
                 onOpenTopic: (topicId) => context.push(Routes.topic(topicId)),
+                onOpenPassage: (passageId) =>
+                    context.push(Routes.player(passageId)),
               ),
             ),
           ],

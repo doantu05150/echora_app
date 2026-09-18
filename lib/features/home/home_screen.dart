@@ -3,25 +3,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/formatting.dart';
 import '../../core/strings.dart';
+import '../../data/local/progress_repository.dart';
+import '../../data/models/passage.dart';
 import '../../data/models/topic.dart';
 import '../../data/providers.dart';
 import '../../ui/theme/app_theme.dart';
+import '../player/playback/playback_timeline.dart';
 import '../../ui/widgets/echora_scaffold.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key, required this.onOpenTopic});
+  const HomeScreen({
+    super.key,
+    required this.onOpenTopic,
+    required this.onOpenPassage,
+  });
 
   final void Function(String topicId) onOpenTopic;
+  final void Function(String passageId) onOpenPassage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topics = ref.watch(topicsProvider);
+    final resumable = ref.watch(resumableProgressProvider).value;
+    final resumablePassage = resumable == null
+        ? null
+        : ref.watch(passageProvider(resumable.passageId)).value;
 
     return EchoraScaffold(
       slivers: [
         const SliverToBoxAdapter(child: _Header()),
         const SliverGap(AppSpacing.sectionGap),
-        const SliverToBoxAdapter(child: _StartHereCard()),
+        SliverToBoxAdapter(
+          child: resumable != null && resumablePassage != null
+              ? _ContinueCard(
+                  passage: resumablePassage,
+                  progress: resumable,
+                  onTap: () => onOpenPassage(resumablePassage.id),
+                )
+              : const _StartHereCard(),
+        ),
         const SliverGap(AppSpacing.sectionGap),
         SliverToBoxAdapter(
           child: Text(
@@ -111,6 +131,92 @@ class _StreakChip extends StatelessWidget {
             style: context.typography.caption.copyWith(color: accent.onTint),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({
+    required this.passage,
+    required this.progress,
+    required this.onTap,
+  });
+
+  final Passage passage;
+  final PassageProgress progress;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final accent = colors.violet;
+
+    final totalMs = passage.wordCount / kReferenceWpm * 60000;
+    final ratio = (progress.positionMs / totalMs).clamp(0.0, 1.0);
+    final remainingMin = ((totalMs - progress.positionMs) / 60000).ceil();
+
+    return Material(
+      color: accent.tint,
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: accent.tintBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                Strings.continueTitle,
+                style: context.typography.caption.copyWith(
+                  color: accent.onTint,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                passage.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.displaySmall.copyWith(
+                  color: accent.onTint,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                child: LinearProgressIndicator(
+                  value: ratio,
+                  minHeight: 5,
+                  backgroundColor: colors.surface,
+                  valueColor: AlwaysStoppedAnimation(accent.base),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    Strings.completedPercent((ratio * 100).round()),
+                    style: context.typography.caption.copyWith(
+                      color: accent.onTint,
+                    ),
+                  ),
+                  Text(
+                    Strings.remainingMinutes(remainingMin),
+                    style: context.typography.caption.copyWith(
+                      color: accent.onTint,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

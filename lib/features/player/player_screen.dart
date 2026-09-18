@@ -65,6 +65,12 @@ class _PlayerBody extends ConsumerWidget {
           topicTitle: topic?.title ?? '',
           passageOrder: state.passage.order,
           title: state.passage.title,
+          bookmarked:
+              ref.watch(bookmarkedIdsProvider).value?.contains(
+                state.passage.id,
+              ) ??
+              false,
+          onToggleBookmark: controller.toggleBookmark,
         ),
         Expanded(
           child: ClockBuilder(
@@ -153,11 +159,15 @@ class _TopBar extends StatelessWidget {
     required this.topicTitle,
     required this.passageOrder,
     required this.title,
+    required this.bookmarked,
+    required this.onToggleBookmark,
   });
 
   final String topicTitle;
   final int passageOrder;
   final String title;
+  final bool bookmarked;
+  final VoidCallback onToggleBookmark;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +209,22 @@ class _TopBar extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppSize.iconButton),
+          SizedBox(
+            width: AppSize.iconButton,
+            height: AppSize.iconButton,
+            child: IconButton(
+              onPressed: onToggleBookmark,
+              tooltip: bookmarked
+                  ? Strings.bookmarkRemove
+                  : Strings.bookmarkAdd,
+              icon: Icon(
+                bookmarked
+                    ? Icons.bookmark_rounded
+                    : Icons.bookmark_border_rounded,
+                color: bookmarked ? colors.clay.base : colors.inkFaint,
+              ),
+            ),
+          ),
         ],
       ),
     );

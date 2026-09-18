@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/strings.dart';
+import '../../data/local/progress_repository.dart';
 import '../../data/models/passage.dart';
 import '../../data/models/topic.dart';
 import '../../data/providers.dart';
 import '../../ui/theme/app_theme.dart';
+import '../player/playback/playback_timeline.dart';
 
 /// Bộ lọc độ dài đang chọn của màn Topic. `null` = tất cả.
 class TopicDurationFilter extends Notifier<int?> {
@@ -102,6 +104,15 @@ class TopicScreen extends ConsumerWidget {
                       itemBuilder: (context, index) => PassageTile(
                         passage: value[index],
                         accent: accent,
+                        progress: ref
+                            .watch(progressByPassageProvider)
+                            .value?[value[index].id],
+                        bookmarked:
+                            ref
+                                .watch(bookmarkedIdsProvider)
+                                .value
+                                ?.contains(value[index].id) ??
+                            false,
                         onTap: () => onOpenPassage(value[index].id),
                       ),
                     ),
@@ -265,12 +276,29 @@ class PassageTile extends StatelessWidget {
     super.key,
     required this.passage,
     required this.accent,
+    required this.progress,
+    required this.bookmarked,
     required this.onTap,
   });
 
   final Passage passage;
   final AccentColor accent;
+  final PassageProgress? progress;
+  final bool bookmarked;
   final VoidCallback onTap;
+
+  /// Bài đang dở: đã bắt đầu nhưng chưa xong.
+  bool get _inProgress =>
+      progress != null && !progress!.isCompleted && progress!.positionMs > 0;
+
+  String get _statusLabel {
+    final saved = progress;
+    if (saved == null || saved.positionMs == 0) return Strings.notStarted;
+
+    final totalMs = passage.wordCount / kReferenceWpm * 60000;
+    final percent = (saved.positionMs / totalMs * 100).clamp(0, 100).round();
+    return Strings.completedPercent(saved.isCompleted ? 100 : percent);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +314,10 @@ class PassageTile extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.cardPadding),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: colors.border),
+            border: Border.all(
+              color: _inProgress ? accent.base : colors.border,
+              width: _inProgress ? 1.5 : 1,
+            ),
           ),
           child: Row(
             children: [
@@ -319,7 +350,7 @@ class PassageTile extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
                       '${Strings.durationLabel(passage.durationMin)} · '
-                      '${passage.level} · ${Strings.notStarted}',
+                      '${passage.level} · $_statusLabel',
                       style: context.typography.caption.copyWith(
                         color: colors.inkMuted,
                       ),
@@ -328,11 +359,16 @@ class PassageTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: colors.inkFaint,
-                size: 22,
-              ),
+              if (_inProgress)
+                Icon(Icons.play_arrow_rounded, color: accent.base, size: 22)
+              else
+                Icon(
+                  bookmarked
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
+                  color: bookmarked ? colors.clay.base : colors.inkFaint,
+                  size: 20,
+                ),
             ],
           ),
         ),

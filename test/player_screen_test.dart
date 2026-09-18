@@ -1,5 +1,7 @@
 import 'package:echora/core/screen_wakelock.dart';
 import 'package:echora/data/content_repository.dart';
+import 'package:echora/data/local/app_database.dart';
+import 'package:echora/data/local/progress_repository.dart';
 import 'package:echora/data/models/passage.dart';
 import 'package:echora/data/models/topic.dart';
 import 'package:echora/data/providers.dart';
@@ -42,6 +44,47 @@ class _FakeWakelock implements ScreenWakelock {
   Future<void> setEnabled(bool value) async => enabled = value;
 }
 
+/// Player chỉ cần vài phép đọc/ghi tiến độ; mở sqflite thật trong widget test
+/// làm treo fake async của test binding.
+class _FakeProgressRepository extends ProgressRepository {
+  _FakeProgressRepository() : super(AppDatabase());
+
+  final _bookmarks = <String>{};
+  int? savedPositionMs;
+
+  @override
+  Future<Set<String>> bookmarkedIds() async => _bookmarks;
+
+  @override
+  Future<void> toggleBookmark(String passageId) async {
+    if (!_bookmarks.remove(passageId)) _bookmarks.add(passageId);
+  }
+
+  @override
+  Future<Map<String, PassageProgress>> allProgress() async => {};
+
+  @override
+  Future<PassageProgress?> progressOf(String passageId) async => null;
+
+  @override
+  Future<PassageProgress?> mostRecentUnfinished() async => null;
+
+  @override
+  Future<void> savePosition(
+    String passageId,
+    int positionMs, {
+    bool completed = false,
+  }) async {
+    savedPositionMs = positionMs;
+  }
+
+  @override
+  Future<void> recordSession(PracticeSession session) async {}
+
+  @override
+  Future<List<PracticeSession>> recentSessions({int limit = 50}) async => [];
+}
+
 class _FakeRepository implements ContentRepository {
   @override
   Future<List<Topic>> getTopics() async => const [_topic];
@@ -56,15 +99,18 @@ class _FakeRepository implements ContentRepository {
 }
 
 late _FakeWakelock _wakelock;
+late _FakeProgressRepository _progress;
 
 Future<void> _pumpPlayer(WidgetTester tester) async {
   SharedPreferences.setMockInitialValues({});
   _wakelock = _FakeWakelock();
+  _progress = _FakeProgressRepository();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         contentRepositoryProvider.overrideWithValue(_FakeRepository()),
         screenWakelockProvider.overrideWithValue(_wakelock),
+        progressRepositoryProvider.overrideWithValue(_progress),
       ],
       child: MaterialApp(
         theme: AppTheme.light(),
@@ -72,7 +118,9 @@ Future<void> _pumpPlayer(WidgetTester tester) async {
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  // pumpAndSettle không dùng được: controller giữ Timer.periodic để lưu vị trí.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 50));
 }
 
 void main() {
@@ -134,18 +182,20 @@ void main() {
     await _pumpPlayer(tester);
 
     await tester.tap(find.byIcon(Icons.tune_rounded));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.text('Cài đặt buổi luyện'), findsOneWidget);
     await tester.tap(find.text('Nhanh'));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Sheet vẫn mở mà cả sheet lẫn Player phía sau đã đổi số:
     // không phải bấm Áp dụng mới thấy hiệu quả.
     expect(find.text('110 từ/phút'), findsNWidgets(2));
 
     await tester.tap(find.text('Áp dụng'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('1.2×'), findsOneWidget);
   });
 
@@ -160,6 +210,42 @@ void main() {
     await tester.tap(find.byIcon(Icons.pause_rounded));
     await tester.pump();
     expect(_wakelock.enabled, isFalse);
+  });
+
+  testWidgets('the bookmark button toggles and reflects the saved state', (
+    tester,
+  ) async {
+    await _pumpPlayer(tester);
+
+    expect(find.byIcon(Icons.bookmark_border_rounded), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.bookmark_border_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byIcon(Icons.bookmark_rounded), findsOneWidget);
+    expect(await _progress.bookmarkedIds(), {'daily-life-01'});
+  });
+
+  testWidgets('pausing writes the position so the passage can resume', (
+    tester,
+  ) async {
+    await _pumpPlayer(tester);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PlayerScreen)),
+    );
+    final controller = container.read(
+      playerControllerProvider('daily-life-01').notifier,
+    );
+
+    controller.seekToSentence(1);
+    await tester.pump();
+
+    final timeline = container
+        .read(playerControllerProvider('daily-life-01'))
+        .requireValue
+        .timeline;
+    expect(_progress.savedPositionMs, timeline.sentences[1].startMs);
   });
 
   testWidgets('changing wpm keeps the reading position', (tester) async {

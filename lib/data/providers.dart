@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'assets_content_repository.dart';
 import 'content_repository.dart';
+import 'local/app_database.dart';
+import 'local/progress_repository.dart';
 import 'models/passage.dart';
 import 'models/topic.dart';
 import 'user_preferences.dart';
@@ -12,6 +14,32 @@ final contentRepositoryProvider = Provider<ContentRepository>(
 
 final preferencesRepositoryProvider = Provider(
   (ref) => PreferencesRepository(),
+);
+
+final appDatabaseProvider = Provider((ref) {
+  final db = AppDatabase();
+  ref.onDispose(db.close);
+  return db;
+});
+
+final progressRepositoryProvider = Provider(
+  (ref) => ProgressRepository(ref.watch(appDatabaseProvider)),
+);
+
+final bookmarkedIdsProvider = FutureProvider<Set<String>>(
+  (ref) => ref.watch(progressRepositoryProvider).bookmarkedIds(),
+);
+
+final progressByPassageProvider = FutureProvider<Map<String, PassageProgress>>(
+  (ref) => ref.watch(progressRepositoryProvider).allProgress(),
+);
+
+final resumableProgressProvider = FutureProvider<PassageProgress?>(
+  (ref) => ref.watch(progressRepositoryProvider).mostRecentUnfinished(),
+);
+
+final recentSessionsProvider = FutureProvider<List<PracticeSession>>(
+  (ref) => ref.watch(progressRepositoryProvider).recentSessions(),
 );
 
 /// Giá trị mặc định cho buổi luyện. Player đọc một lần khi mở bài rồi tự giữ
