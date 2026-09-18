@@ -10,9 +10,14 @@ import '../../ui/theme/app_theme.dart';
 import '../../ui/widgets/echora_scaffold.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key, required this.onOpenPassage});
+  const ProfileScreen({
+    super.key,
+    required this.onOpenPassage,
+    required this.onOpenSettings,
+  });
 
   final void Function(String passageId) onOpenPassage;
+  final VoidCallback onOpenSettings;
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -30,7 +35,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return EchoraScaffold(
       slivers: [
-        SliverToBoxAdapter(child: _ProfileHeader(stats: stats)),
+        SliverToBoxAdapter(
+          child: _ProfileHeader(
+            stats: stats,
+            onOpenSettings: widget.onOpenSettings,
+          ),
+        ),
         const SliverGap(AppSpacing.sectionGap),
         SliverToBoxAdapter(
           child: _StatsRow(
@@ -64,9 +74,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 class _ProfileHeader extends ConsumerWidget {
-  const _ProfileHeader({required this.stats});
+  const _ProfileHeader({required this.stats, required this.onOpenSettings});
 
   final PracticeStats? stats;
+  final VoidCallback onOpenSettings;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,6 +116,15 @@ class _ProfileHeader extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+        ),
+        SizedBox(
+          width: AppSize.iconButton,
+          height: AppSize.iconButton,
+          child: IconButton(
+            onPressed: onOpenSettings,
+            tooltip: Strings.settingsTitle,
+            icon: Icon(Icons.settings_outlined, color: colors.inkMuted),
           ),
         ),
       ],

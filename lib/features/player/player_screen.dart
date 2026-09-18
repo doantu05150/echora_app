@@ -14,6 +14,7 @@ import 'widgets/clock_builder.dart';
 import 'widgets/karaoke_text_view.dart';
 import 'widgets/line_text_view.dart';
 import 'widgets/scroll_text_view.dart';
+import 'widgets/sentence_haptics.dart';
 
 class PlayerScreen extends ConsumerWidget {
   const PlayerScreen({super.key, required this.passageId});
@@ -31,9 +32,7 @@ class PlayerScreen extends ConsumerWidget {
         child: switch (async) {
           AsyncData(:final value) => _PlayerBody(
             state: value,
-            controller: ref.read(
-              playerControllerProvider(passageId).notifier,
-            ),
+            controller: ref.read(playerControllerProvider(passageId).notifier),
           ),
           AsyncError(:final error) => Center(
             child: Text('$error', style: context.typography.body),
@@ -66,35 +65,41 @@ class _PlayerBody extends ConsumerWidget {
           passageOrder: state.passage.order,
           title: state.passage.title,
           bookmarked:
-              ref.watch(bookmarkedIdsProvider).value?.contains(
-                state.passage.id,
-              ) ??
+              ref
+                  .watch(bookmarkedIdsProvider)
+                  .value
+                  ?.contains(state.passage.id) ??
               false,
           onToggleBookmark: controller.toggleBookmark,
         ),
         Expanded(
           child: ClockBuilder(
             clock: controller.clock,
-            builder: (context, elapsedMs) => switch (state.displayMode) {
-              DisplayMode.scroll => ScrollTextView(
-                timeline: state.timeline,
-                elapsedMs: elapsedMs,
-                fontSizeSp: state.fontSizeSp,
-                accent: accent,
-              ),
-              DisplayMode.line => LineTextView(
-                timeline: state.timeline,
-                elapsedMs: elapsedMs,
-                fontSizeSp: state.fontSizeSp,
-                accent: accent,
-              ),
-              DisplayMode.karaoke => KaraokeTextView(
-                timeline: state.timeline,
-                elapsedMs: elapsedMs,
-                fontSizeSp: state.fontSizeSp,
-                accent: accent,
-              ),
-            },
+            builder: (context, elapsedMs) => SentenceHaptics(
+              timeline: state.timeline,
+              elapsedMs: elapsedMs,
+              enabled: state.preferences.hapticOnSentence,
+              child: switch (state.displayMode) {
+                DisplayMode.scroll => ScrollTextView(
+                  timeline: state.timeline,
+                  elapsedMs: elapsedMs,
+                  fontSizeSp: state.fontSizeSp,
+                  accent: accent,
+                ),
+                DisplayMode.line => LineTextView(
+                  timeline: state.timeline,
+                  elapsedMs: elapsedMs,
+                  fontSizeSp: state.fontSizeSp,
+                  accent: accent,
+                ),
+                DisplayMode.karaoke => KaraokeTextView(
+                  timeline: state.timeline,
+                  elapsedMs: elapsedMs,
+                  fontSizeSp: state.fontSizeSp,
+                  accent: accent,
+                ),
+              },
+            ),
           ),
         ),
         Padding(
@@ -257,15 +262,21 @@ class _ProgressRow extends StatelessWidget {
           children: [
             Text(
               formatClock(elapsedMs),
-              style: context.typography.numeric.copyWith(color: colors.inkMuted),
+              style: context.typography.numeric.copyWith(
+                color: colors.inkMuted,
+              ),
             ),
             Text(
               Strings.wpmLabel(timeline.wpm),
-              style: context.typography.numeric.copyWith(color: colors.inkMuted),
+              style: context.typography.numeric.copyWith(
+                color: colors.inkMuted,
+              ),
             ),
             Text(
               formatClock(timeline.totalMs),
-              style: context.typography.numeric.copyWith(color: colors.inkMuted),
+              style: context.typography.numeric.copyWith(
+                color: colors.inkMuted,
+              ),
             ),
           ],
         ),
