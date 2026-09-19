@@ -18,6 +18,7 @@ nội dung luyện tập tiếng Anh.
 - Navigation: `go_router`
 - Preference: `shared_preferences`
 - Bookmark / progress / lịch sử: `sqflite`
+- Giọng đọc mẫu: mp3 render sẵn trong `assets/audio/`, phát bằng `just_audio`
 - Nội dung: JSON trong `assets/content/` ở v1, **thiết kế repository để sau thay bằng
   API mà không đổi UI layer**
 - Không thêm package mới khi chưa hỏi
@@ -43,6 +44,7 @@ flutter test
 flutter run -d web-server --web-port 5599   # preview nhanh khi làm UI
 flutter build apk --debug
 python3 tool/generate_icons.py              # sinh lại logo + app icon
+python3 tool/generate_voice.py              # render giọng đọc mẫu (xem header file)
 ```
 
 ## Tài liệu trong repo
@@ -58,8 +60,10 @@ Mockup gốc (canvas, xem được luồng bấm): https://claude.ai/artifact/M9
 
 ## Ranh giới
 
-- Phần **ghi âm / chấm điểm phát âm / TTS** là v2. Không làm ở v1, nhưng đừng thiết kế
+- Phần **ghi âm / chấm điểm phát âm** là v2. Không làm ở v1, nhưng đừng thiết kế
   kiến trúc chặn đường nó (xem mục "Chuẩn bị cho v2" trong spec).
+- Giọng đọc mẫu đã làm ở v1 (chế độ `VOICE`) bằng audio render sẵn, không phải TTS
+  lúc chạy — xem `docs/spec.md` mục 2.4.
 - Không tự thêm analytics, ads, crash reporting khi chưa được yêu cầu.
 - Trước khi làm một feature mới, đọc `docs/spec.md` phần tương ứng; nếu spec mâu thuẫn
   với yêu cầu trong chat, hỏi lại chứ đừng tự chọn.

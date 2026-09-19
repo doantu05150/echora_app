@@ -1,0 +1,139 @@
+{
+  "passageId": "business-03",
+  "audio": "assets/audio/business-03.mp3",
+  "voice": "am_michael",
+  "nativeWpm": 96,
+  "totalMs": 180855,
+  "sentences": [
+    {
+      "index": 0,
+      "startMs": 0,
+      "endMs": 7637
+    },
+    {
+      "index": 1,
+      "startMs": 7987,
+      "endMs": 12979
+    },
+    {
+      "index": 2,
+      "startMs": 13329,
+      "endMs": 19004
+    },
+    {
+      "index": 3,
+      "startMs": 19354,
+      "endMs": 25007
+    },
+    {
+      "index": 4,
+      "startMs": 25357,
+      "endMs": 31779
+    },
+    {
+      "index": 5,
+      "startMs": 32129,
+      "endMs": 37121
+    },
+    {
+      "index": 6,
+      "startMs": 37471,
+      "endMs": 45023
+    },
+    {
+      "index": 7,
+      "startMs": 45373,
+      "endMs": 51858
+    },
+    {
+      "index": 8,
+      "startMs": 52208,
+      "endMs": 59803
+    },
+    {
+      "index": 9,
+      "startMs": 60153,
+      "endMs": 66467
+    },
+    {
+      "index": 10,
+      "startMs": 66817,
+      "endMs": 73303
+    },
+    {
+      "index": 11,
+      "startMs": 73653,
+      "endMs": 80117
+    },
+    {
+      "index": 12,
+      "startMs": 80467,
+      "endMs": 87827
+    },
+    {
+      "index": 13,
+      "startMs": 88177,
+      "endMs": 94875
+    },
+    {
+      "index": 14,
+      "startMs": 95225,
+      "endMs": 100921
+    },
+    {
+      "index": 15,
+      "startMs": 101271,
+      "endMs": 107607
+    },
+    {
+      "index": 16,
+      "startMs": 107957,
+      "endMs": 114379
+    },
+    {
+      "index": 17,
+      "startMs": 114729,
+      "endMs": 122451
+    },
+    {
+      "index": 18,
+      "startMs": 122801,
+      "endMs": 129244
+    },
+    {
+      "index": 19,
+      "startMs": 129594,
+      "endMs": 136271
+    },
+    {
+      "index": 20,
+      "startMs": 136621,
+      "endMs": 144728
+    },
+    {
+      "index": 21,
+      "startMs": 145078,
+      "endMs": 153014
+    },
+    {
+      "index": 22,
+      "startMs": 153364,
+      "endMs": 159465
+    },
+    {
+      "index": 23,
+      "startMs": 159815,
+      "endMs": 166429
+    },
+    {
+      "index": 24,
+      "startMs": 166779,
+      "endMs": 174309
+    },
+    {
+      "index": 25,
+      "startMs": 174659,
+      "endMs": 180505
+    }
+  ]
+}

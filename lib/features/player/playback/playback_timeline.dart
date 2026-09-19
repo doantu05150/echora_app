@@ -1,10 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../data/models/passage.dart';
+import '../../../data/models/voice_track.dart';
 
 /// WPM tham chiếu: `wpm = 90` tương đương hệ số `1.0×`.
 const int kReferenceWpm = 90;
 const int kMinWpm = 50;
+
+/// Chế độ đọc bị chặn dưới: dưới mức này giọng phải kéo chậm quá nhiều so với
+/// tốc độ đã render nên méo tiếng. Chữ thì vẫn chạy được mọi tốc độ.
+const int kVoiceMinWpm = 90;
 const int kMaxWpm = 160;
 const int kWpmStep = 5;
 
@@ -97,6 +102,70 @@ class PlaybackTimeline {
       wpm: wpm,
       sentences: sentences,
       totalMs: (globalIndex * msPerWord).round(),
+      wordCount: globalIndex,
+    );
+  }
+
+  /// Bảng timing của chế độ đọc: mốc từng câu lấy từ giọng đã render, chỉ co
+  /// giãn theo tốc độ phát. Tính lại theo WPM như `of` sẽ khiến chữ trôi lệch
+  /// khỏi tiếng.
+  factory PlaybackTimeline.ofVoice(
+    Passage passage,
+    VoiceTrack track,
+    int wpm,
+  ) {
+    final speed = track.speedAt(wpm);
+    int scale(int ms) => (ms / speed).round();
+
+    final sentences = <SentenceSpan>[];
+    var globalIndex = 0;
+
+    for (final measured in track.sentences) {
+      if (measured.index >= passage.body.length) continue;
+      final text = passage.body[measured.index];
+      final tokens = text.split(RegExp(r'\s+'))..removeWhere((t) => t.isEmpty);
+      if (tokens.isEmpty) continue;
+
+      final startMs = scale(measured.startMs);
+      final endMs = scale(measured.endMs);
+
+      // Không có mốc từng từ trong file audio, nên chia đều theo độ dài chữ —
+      // đủ cho haptic và cho việc giữ vị trí khi đổi WPM. Chế độ karaoke không
+      // dùng bảng này.
+      final weights = tokens.map((t) => t.length + 1).toList();
+      final totalWeight = weights.reduce((a, b) => a + b);
+      final words = <WordSpan>[];
+      var consumed = 0;
+
+      for (var i = 0; i < tokens.length; i++) {
+        final from = startMs + ((endMs - startMs) * consumed / totalWeight).round();
+        consumed += weights[i];
+        final to = startMs + ((endMs - startMs) * consumed / totalWeight).round();
+        words.add(
+          WordSpan(
+            text: tokens[i],
+            globalIndex: globalIndex++,
+            startMs: from,
+            endMs: to,
+          ),
+        );
+      }
+
+      sentences.add(
+        SentenceSpan(
+          index: sentences.length,
+          text: text,
+          words: words,
+          startMs: startMs,
+          endMs: endMs,
+        ),
+      );
+    }
+
+    return PlaybackTimeline(
+      wpm: wpm,
+      sentences: sentences,
+      totalMs: scale(track.totalMs),
       wordCount: globalIndex,
     );
   }

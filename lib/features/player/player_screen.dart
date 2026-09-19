@@ -80,7 +80,7 @@ class _PlayerBody extends ConsumerWidget {
               elapsedMs: elapsedMs,
               enabled: state.preferences.hapticOnSentence,
               child: switch (state.displayMode) {
-                DisplayMode.scroll => ScrollTextView(
+                DisplayMode.scroll || DisplayMode.voice => ScrollTextView(
                   timeline: state.timeline,
                   elapsedMs: elapsedMs,
                   fontSizeSp: state.fontSizeSp,
@@ -147,6 +147,7 @@ void _openSettings(BuildContext context, PlayerController controller) {
           displayMode: state.displayMode,
           fontSizeSp: state.fontSizeSp,
           keepScreenOn: state.keepScreenOn,
+          voiceAvailable: state.hasVoice,
           onWpm: controller.setWpm,
           onDuration: controller.setPreferredDurationMin,
           onDisplayMode: controller.setDisplayMode,

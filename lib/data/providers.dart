@@ -6,6 +6,7 @@ import 'local/app_database.dart';
 import 'local/progress_repository.dart';
 import 'models/passage.dart';
 import 'models/topic.dart';
+import 'models/voice_track.dart';
 import 'user_preferences.dart';
 
 final contentRepositoryProvider = Provider<ContentRepository>(
@@ -95,6 +96,10 @@ final topicProvider = FutureProvider.family<Topic?, String>((ref, id) async {
 
 final passageProvider = FutureProvider.family<Passage?, String>(
   (ref, id) => ref.watch(contentRepositoryProvider).getPassage(id),
+);
+
+final voiceTrackProvider = FutureProvider.family<VoiceTrack?, String>(
+  (ref, id) => ref.watch(contentRepositoryProvider).getVoiceTrack(id),
 );
 
 /// Danh sách bài của một topic, `durationMin` null = không lọc.

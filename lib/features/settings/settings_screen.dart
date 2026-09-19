@@ -144,6 +144,7 @@ class SettingsScreen extends ConsumerWidget {
         DisplayMode.scroll => Strings.sheetModeScroll,
         DisplayMode.line => Strings.sheetModeLine,
         DisplayMode.karaoke => Strings.sheetModeKaraoke,
+        DisplayMode.voice => Strings.sheetModeVoice,
       };
 }
 

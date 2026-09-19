@@ -1,0 +1,89 @@
+{
+  "passageId": "daily-life-01",
+  "audio": "assets/audio/daily-life-01.mp3",
+  "voice": "am_michael",
+  "nativeWpm": 98,
+  "totalMs": 117173,
+  "sentences": [
+    {
+      "index": 0,
+      "startMs": 0,
+      "endMs": 6485
+    },
+    {
+      "index": 1,
+      "startMs": 6835,
+      "endMs": 13598
+    },
+    {
+      "index": 2,
+      "startMs": 13948,
+      "endMs": 20775
+    },
+    {
+      "index": 3,
+      "startMs": 21125,
+      "endMs": 28741
+    },
+    {
+      "index": 4,
+      "startMs": 29091,
+      "endMs": 35789
+    },
+    {
+      "index": 5,
+      "startMs": 36139,
+      "endMs": 42262
+    },
+    {
+      "index": 6,
+      "startMs": 42612,
+      "endMs": 50676
+    },
+    {
+      "index": 7,
+      "startMs": 51026,
+      "endMs": 58621
+    },
+    {
+      "index": 8,
+      "startMs": 58971,
+      "endMs": 65840
+    },
+    {
+      "index": 9,
+      "startMs": 66190,
+      "endMs": 73166
+    },
+    {
+      "index": 10,
+      "startMs": 73516,
+      "endMs": 79447
+    },
+    {
+      "index": 11,
+      "startMs": 79797,
+      "endMs": 87327
+    },
+    {
+      "index": 12,
+      "startMs": 87677,
+      "endMs": 95123
+    },
+    {
+      "index": 13,
+      "startMs": 95473,
+      "endMs": 103153
+    },
+    {
+      "index": 14,
+      "startMs": 103503,
+      "endMs": 109497
+    },
+    {
+      "index": 15,
+      "startMs": 109847,
+      "endMs": 116823
+    }
+  ]
+}

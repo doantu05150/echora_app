@@ -1,0 +1,129 @@
+{
+  "passageId": "business-02",
+  "audio": "assets/audio/business-02.mp3",
+  "voice": "am_michael",
+  "nativeWpm": 103,
+  "totalMs": 167376,
+  "sentences": [
+    {
+      "index": 0,
+      "startMs": 0,
+      "endMs": 7019
+    },
+    {
+      "index": 1,
+      "startMs": 7369,
+      "endMs": 14515
+    },
+    {
+      "index": 2,
+      "startMs": 14865,
+      "endMs": 21308
+    },
+    {
+      "index": 3,
+      "startMs": 21658,
+      "endMs": 29189
+    },
+    {
+      "index": 4,
+      "startMs": 29539,
+      "endMs": 34851
+    },
+    {
+      "index": 5,
+      "startMs": 35201,
+      "endMs": 41473
+    },
+    {
+      "index": 6,
+      "startMs": 41823,
+      "endMs": 47476
+    },
+    {
+      "index": 7,
+      "startMs": 47826,
+      "endMs": 53927
+    },
+    {
+      "index": 8,
+      "startMs": 54277,
+      "endMs": 61125
+    },
+    {
+      "index": 9,
+      "startMs": 61475,
+      "endMs": 68579
+    },
+    {
+      "index": 10,
+      "startMs": 68929,
+      "endMs": 76993
+    },
+    {
+      "index": 11,
+      "startMs": 77343,
+      "endMs": 83423
+    },
+    {
+      "index": 12,
+      "startMs": 83773,
+      "endMs": 89683
+    },
+    {
+      "index": 13,
+      "startMs": 90033,
+      "endMs": 96795
+    },
+    {
+      "index": 14,
+      "startMs": 97145,
+      "endMs": 103716
+    },
+    {
+      "index": 15,
+      "startMs": 104066,
+      "endMs": 109655
+    },
+    {
+      "index": 16,
+      "startMs": 110005,
+      "endMs": 116811
+    },
+    {
+      "index": 17,
+      "startMs": 117161,
+      "endMs": 123966
+    },
+    {
+      "index": 18,
+      "startMs": 124316,
+      "endMs": 132081
+    },
+    {
+      "index": 19,
+      "startMs": 132431,
+      "endMs": 139749
+    },
+    {
+      "index": 20,
+      "startMs": 140099,
+      "endMs": 146541
+    },
+    {
+      "index": 21,
+      "startMs": 146891,
+      "endMs": 153590
+    },
+    {
+      "index": 22,
+      "startMs": 153940,
+      "endMs": 160276
+    },
+    {
+      "index": 23,
+      "startMs": 160626,
+      "endMs": 167026
+    }
+  ]
+}

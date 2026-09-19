@@ -38,6 +38,7 @@ class SessionSettingsSheet extends StatelessWidget {
     required this.displayMode,
     required this.fontSizeSp,
     required this.keepScreenOn,
+    this.voiceAvailable = true,
     required this.onWpm,
     required this.onDuration,
     required this.onDisplayMode,
@@ -51,15 +52,24 @@ class SessionSettingsSheet extends StatelessWidget {
   final double fontSizeSp;
   final bool keepScreenOn;
 
+  /// false khi bài đang mở chưa có giọng đọc mẫu. Sheet mặc định ở màn Cài đặt
+  /// luôn cho chọn: bài nào thiếu giọng thì tự chạy chữ im lặng.
+  final bool voiceAvailable;
+
   final ValueChanged<int> onWpm;
   final ValueChanged<int> onDuration;
   final ValueChanged<DisplayMode> onDisplayMode;
   final ValueChanged<double> onFontSize;
   final ValueChanged<bool> onKeepScreenOn;
 
+  bool get _voiceSelected => displayMode.needsVoice && voiceAvailable;
+
+  int get _minWpm => _voiceSelected ? kVoiceMinWpm : kMinWpm;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final minWpm = _minWpm;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -79,26 +89,34 @@ class SessionSettingsSheet extends StatelessWidget {
               label: Strings.sheetSpeed,
               trailing: Strings.wpmLabel(wpm),
             ),
+            if (_voiceSelected)
+              Text(
+                Strings.sheetSpeedVoiceHint,
+                style: context.typography.caption.copyWith(
+                  color: colors.inkMuted,
+                ),
+              ),
             Slider(
-              value: wpm.toDouble(),
-              min: kMinWpm.toDouble(),
+              value: wpm.toDouble().clamp(minWpm.toDouble(), kMaxWpm.toDouble()),
+              min: minWpm.toDouble(),
               max: kMaxWpm.toDouble(),
-              divisions: (kMaxWpm - kMinWpm) ~/ kWpmStep,
+              divisions: (kMaxWpm - minWpm) ~/ kWpmStep,
               onChanged: (value) => onWpm(value.round()),
             ),
             Row(
               children: [
                 for (final (label, value) in _wpmPresets)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.sm),
-                      child: _ChoiceChip(
-                        label: label,
-                        selected: wpm == value,
-                        onTap: () => onWpm(value),
+                  if (value >= minWpm)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.sm),
+                        child: _ChoiceChip(
+                          label: label,
+                          selected: wpm == value,
+                          onTap: () => onWpm(value),
+                        ),
                       ),
                     ),
-                  ),
               ],
             ),
             const SizedBox(height: AppSpacing.sectionGap),
@@ -136,6 +154,7 @@ class SessionSettingsSheet extends StatelessWidget {
                 child: _ModeOption(
                   mode: mode,
                   selected: displayMode == mode,
+                  enabled: !mode.needsVoice || voiceAvailable,
                   onTap: () => onDisplayMode(mode),
                 ),
               ),
@@ -255,11 +274,13 @@ class _ModeOption extends StatelessWidget {
   const _ModeOption({
     required this.mode,
     required this.selected,
+    required this.enabled,
     required this.onTap,
   });
 
   final DisplayMode mode;
   final bool selected;
+  final bool enabled;
   final VoidCallback onTap;
 
   @override
@@ -274,13 +295,22 @@ class _ModeOption extends StatelessWidget {
         Strings.sheetModeKaraoke,
         Strings.sheetModeKaraokeHint,
       ),
+      DisplayMode.voice => (Strings.sheetModeVoice, Strings.sheetModeVoiceHint),
+    };
+
+    final titleColor = switch ((enabled, selected)) {
+      (false, _) => colors.inkMuted,
+      (true, true) => accent.onTint,
+      (true, false) => colors.ink,
     };
 
     return Material(
-      color: selected ? accent.tint : colors.surface,
+      color: enabled
+          ? (selected ? accent.tint : colors.surface)
+          : colors.surfaceMuted,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: InkWell(
-        onTap: onTap,
+        onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.mdPlus),
@@ -299,20 +329,22 @@ class _ModeOption extends StatelessWidget {
                     Text(
                       title,
                       style: context.typography.title.copyWith(
-                        color: selected ? accent.onTint : colors.ink,
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      hint,
+                      enabled ? hint : Strings.sheetModeVoiceMissing,
                       style: context.typography.caption.copyWith(
-                        color: selected ? accent.onTint : colors.inkMuted,
+                        color: selected && enabled
+                            ? accent.onTint
+                            : colors.inkMuted,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (selected)
+              if (selected && enabled)
                 Icon(Icons.check_circle_rounded, color: accent.base, size: 20),
             ],
           ),

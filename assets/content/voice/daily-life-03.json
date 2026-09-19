@@ -1,0 +1,129 @@
+{
+  "passageId": "daily-life-03",
+  "audio": "assets/audio/daily-life-03.mp3",
+  "voice": "am_michael",
+  "nativeWpm": 109,
+  "totalMs": 158117,
+  "sentences": [
+    {
+      "index": 0,
+      "startMs": 0,
+      "endMs": 6400
+    },
+    {
+      "index": 1,
+      "startMs": 6750,
+      "endMs": 13214
+    },
+    {
+      "index": 2,
+      "startMs": 13564,
+      "endMs": 19452
+    },
+    {
+      "index": 3,
+      "startMs": 19802,
+      "endMs": 25839
+    },
+    {
+      "index": 4,
+      "startMs": 26189,
+      "endMs": 31992
+    },
+    {
+      "index": 5,
+      "startMs": 32342,
+      "endMs": 37633
+    },
+    {
+      "index": 6,
+      "startMs": 37983,
+      "endMs": 43849
+    },
+    {
+      "index": 7,
+      "startMs": 44199,
+      "endMs": 50983
+    },
+    {
+      "index": 8,
+      "startMs": 51333,
+      "endMs": 58053
+    },
+    {
+      "index": 9,
+      "startMs": 58403,
+      "endMs": 64910
+    },
+    {
+      "index": 10,
+      "startMs": 65260,
+      "endMs": 71191
+    },
+    {
+      "index": 11,
+      "startMs": 71541,
+      "endMs": 77663
+    },
+    {
+      "index": 12,
+      "startMs": 78013,
+      "endMs": 84797
+    },
+    {
+      "index": 13,
+      "startMs": 85147,
+      "endMs": 91889
+    },
+    {
+      "index": 14,
+      "startMs": 92239,
+      "endMs": 98361
+    },
+    {
+      "index": 15,
+      "startMs": 98711,
+      "endMs": 105261
+    },
+    {
+      "index": 16,
+      "startMs": 105611,
+      "endMs": 111776
+    },
+    {
+      "index": 17,
+      "startMs": 112126,
+      "endMs": 119337
+    },
+    {
+      "index": 18,
+      "startMs": 119687,
+      "endMs": 126023
+    },
+    {
+      "index": 19,
+      "startMs": 126373,
+      "endMs": 132730
+    },
+    {
+      "index": 20,
+      "startMs": 133080,
+      "endMs": 138179
+    },
+    {
+      "index": 21,
+      "startMs": 138529,
+      "endMs": 144843
+    },
+    {
+      "index": 22,
+      "startMs": 145193,
+      "endMs": 151423
+    },
+    {
+      "index": 23,
+      "startMs": 151773,
+      "endMs": 157767
+    }
+  ]
+}

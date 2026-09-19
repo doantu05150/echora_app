@@ -55,11 +55,16 @@ abstract final class Strings {
   static const sheetDurationHint = 'Áp dụng cho bài kế tiếp, không đổi bài đang chạy.';
   static const sheetDisplayMode = 'Kiểu chạy chữ';
   static const sheetModeScroll = 'Cuộn đều';
-  static const sheetModeScrollHint = 'Chữ trôi liên tục, câu giữa màn được làm nổi.';
+  static const sheetModeScrollHint = 'Chữ trôi liên tục, câu đang đọc ở giữa màn.';
   static const sheetModeLine = 'Từng câu';
   static const sheetModeLineHint = 'Chữ đứng yên, nhảy sang câu kế tiếp.';
   static const sheetModeKaraoke = 'Karaoke';
   static const sheetModeKaraokeHint = 'Highlight chạy theo từng từ trong câu.';
+  static const sheetModeVoice = 'Cuộn đều + giọng đọc';
+  static const sheetModeVoiceHint = 'Chữ trôi như Cuộn đều, có giọng đọc mẫu đi cùng.';
+  static const sheetModeVoiceMissing = 'Bài này chưa có giọng đọc mẫu.';
+  static const sheetSpeedVoiceHint =
+      'Chế độ có giọng đọc chạy từ 90 từ/phút trở lên.';
   static const sheetFontSize = 'Cỡ chữ';
   static const sheetKeepScreenOn = 'Giữ màn hình sáng';
   static const sheetApply = 'Áp dụng';

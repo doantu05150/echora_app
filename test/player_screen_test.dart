@@ -3,6 +3,7 @@ import 'package:echora/data/content_repository.dart';
 import 'package:echora/data/local/app_database.dart';
 import 'package:echora/data/local/progress_repository.dart';
 import 'package:echora/data/models/passage.dart';
+import 'package:echora/data/models/voice_track.dart';
 import 'package:echora/data/models/topic.dart';
 import 'package:echora/data/providers.dart';
 import 'package:echora/features/player/player_controller.dart';
@@ -96,6 +97,9 @@ class _FakeRepository implements ContentRepository {
   @override
   Future<Passage?> getPassage(String id) async =>
       id == _passage.id ? _passage : null;
+
+  @override
+  Future<VoiceTrack?> getVoiceTrack(String passageId) async => null;
 }
 
 late _FakeWakelock _wakelock;

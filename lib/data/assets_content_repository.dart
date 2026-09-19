@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'content_repository.dart';
 import 'models/passage.dart';
 import 'models/topic.dart';
+import 'models/voice_track.dart';
 
 class AssetsContentRepository implements ContentRepository {
   AssetsContentRepository({AssetBundle? bundle}) : _bundle = bundle ?? rootBundle;
@@ -14,6 +15,7 @@ class AssetsContentRepository implements ContentRepository {
 
   List<Topic>? _topics;
   final Map<String, List<Passage>> _passagesByTopic = {};
+  final Map<String, VoiceTrack?> _voiceTracks = {};
 
   @override
   Future<List<Topic>> getTopics() async {
@@ -49,6 +51,22 @@ class AssetsContentRepository implements ContentRepository {
       if (passage.id == id) return passage;
     }
     return null;
+  }
+
+  @override
+  Future<VoiceTrack?> getVoiceTrack(String passageId) async {
+    if (_voiceTracks.containsKey(passageId)) return _voiceTracks[passageId];
+
+    final String raw;
+    try {
+      raw = await _bundle.loadString('assets/content/voice/$passageId.json');
+    } on FlutterError {
+      return _voiceTracks[passageId] = null;
+    }
+
+    return _voiceTracks[passageId] = VoiceTrack.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
   }
 
   Future<List<Passage>> _loadTopicPassages(String topicId) async {

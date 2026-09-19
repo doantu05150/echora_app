@@ -1,0 +1,99 @@
+{
+  "passageId": "business-01",
+  "audio": "assets/audio/business-01.mp3",
+  "voice": "am_michael",
+  "nativeWpm": 103,
+  "totalMs": 113969,
+  "sentences": [
+    {
+      "index": 0,
+      "startMs": 0,
+      "endMs": 5909
+    },
+    {
+      "index": 1,
+      "startMs": 6259,
+      "endMs": 12318
+    },
+    {
+      "index": 2,
+      "startMs": 12668,
+      "endMs": 18556
+    },
+    {
+      "index": 3,
+      "startMs": 18906,
+      "endMs": 25114
+    },
+    {
+      "index": 4,
+      "startMs": 25464,
+      "endMs": 31907
+    },
+    {
+      "index": 5,
+      "startMs": 32257,
+      "endMs": 38273
+    },
+    {
+      "index": 6,
+      "startMs": 38623,
+      "endMs": 43999
+    },
+    {
+      "index": 7,
+      "startMs": 44349,
+      "endMs": 50962
+    },
+    {
+      "index": 8,
+      "startMs": 51312,
+      "endMs": 55259
+    },
+    {
+      "index": 9,
+      "startMs": 55609,
+      "endMs": 61817
+    },
+    {
+      "index": 10,
+      "startMs": 62167,
+      "endMs": 68332
+    },
+    {
+      "index": 11,
+      "startMs": 68682,
+      "endMs": 74357
+    },
+    {
+      "index": 12,
+      "startMs": 74707,
+      "endMs": 80381
+    },
+    {
+      "index": 13,
+      "startMs": 80731,
+      "endMs": 85169
+    },
+    {
+      "index": 14,
+      "startMs": 85519,
+      "endMs": 91727
+    },
+    {
+      "index": 15,
+      "startMs": 92077,
+      "endMs": 99693
+    },
+    {
+      "index": 16,
+      "startMs": 100043,
+      "endMs": 107253
+    },
+    {
+      "index": 17,
+      "startMs": 107603,
+      "endMs": 113619
+    }
+  ]
+}

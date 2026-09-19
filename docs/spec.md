@@ -27,17 +27,18 @@
   `estimatedSeconds = wordCount / wpm * 60`. Ở 130 WPM, bài "3 phút" hiện `02:05` — hiện số thật, đừng hiện `03:00`.
 - Sheet cài đặt trong Player vẫn có nhóm "Độ dài đoạn": ở đây nó là **bộ lọc cho bài kế tiếp**, không đổi bài đang chạy. Nhãn phải nói rõ điều đó.
 
-### 2.3 Kiểu chạy chữ: làm cả 3
+### 2.3 Kiểu chạy chữ
 
-Ba kiểu, người dùng chọn trong sheet:
+Bốn kiểu, người dùng chọn trong sheet:
 
 | Kiểu | Hành vi |
 |---|---|
-| `SCROLL` | Toàn bộ text cuộn đều liên tục từ dưới lên, tốc độ pixel/giây suy ra từ WPM. Câu ở giữa màn được làm nổi (band màu), các câu khác mờ dần theo khoảng cách tới tâm. |
+| `SCROLL` | Toàn bộ text cuộn đều liên tục từ dưới lên, tốc độ pixel/giây suy ra từ WPM. Mọi câu cùng một màu, **không** highlight câu đang đọc — chỉ có chuyển động cuộn. |
 | `LINE` | Text đứng yên, nhảy **snap** sang câu kế tiếp khi hết thời lượng câu đó. Có animation chuyển mượt ~250ms. |
 | `KARAOKE` | Câu đứng yên, highlight chạy **theo từng từ** trong câu. Từ đã đọc đổi màu. |
+| `VOICE` | Chữ trôi y như `SCROLL`, kèm giọng đọc mẫu. Chi tiết ở 2.4. |
 
-**Cả 3 phải dùng chung một `PlaybackClock`.** Đừng viết 3 bộ đếm thời gian riêng — đó là cách chắc chắn nhất để 3 kiểu lệch nhau khi pause/seek.
+**Cả 4 phải dùng chung một `PlaybackClock`.** Đừng viết bộ đếm thời gian riêng cho từng kiểu — đó là cách chắc chắn nhất để chúng lệch nhau khi pause/seek.
 
 ```
 PlaybackClock
@@ -52,9 +53,39 @@ KaraokeRenderer  đọc elapsedMs → currentSentenceIndex + currentWordIndex
 
 Timing tính sẵn một lần khi mở passage: mỗi câu và mỗi từ có `startMs` / `endMs` dựa trên số từ và WPM. Renderer chỉ tra bảng theo `elapsedMs`, không tự tính.
 
-> Lưu ý thực tế: làm cả 3 kiểu là nhân ba phần rủi ro nhất của app. Đề nghị thứ tự:
+> Lưu ý thực tế: mỗi kiểu là một lần nhân phần rủi ro nhất của app. Thứ tự:
 > `SCROLL` chạy đúng và mượt trước → tách `PlaybackClock` ra → thêm `LINE` (dễ nhất, chỉ tra index)
-> → `KARAOKE` cuối. Nếu `SCROLL` chưa mượt 60fps thì đừng làm tiếp hai cái kia.
+> → `KARAOKE` → `VOICE`. Nếu `SCROLL` chưa mượt 60fps thì đừng làm tiếp.
+
+### 2.4 `VOICE` — cuộn đều kèm giọng đọc
+
+Giọng đọc **render sẵn** thành mp3 trong assets, không dùng TTS trên máy: giọng
+on-device phụ thuộc engine của từng máy và không có mốc thời gian đáng tin.
+
+`tool/generate_voice.py` chạy Kokoro trên máy dev, tổng hợp **từng câu một** rồi
+mới ghép lại. Vì thế độ dài mỗi câu đo được chính xác từ số mẫu audio — không
+cần forced alignment, không cần ffmpeg. Kết quả ghi ra:
+
+- `assets/audio/<passageId>.mp3`
+- `assets/content/voice/<passageId>.json` — `nativeWpm` (tốc độ đọc thật, đo
+  sau khi render) và `startMs` / `endMs` của từng câu.
+
+Bảng timing của `VOICE` **sinh từ mốc đo được** (`PlaybackTimeline.ofVoice`),
+không tính từ WPM như ba kiểu kia. Đây là điều kiện để chữ và tiếng không trôi
+lệch nhau.
+
+Ràng buộc:
+
+- **Clock vẫn là nguồn sự thật.** Audio bám theo clock: mỗi lần clock đổi trạng
+  thái thì tua audio về đúng mốc, và cứ 2 giây kiểm tra lệch một lần, quá
+  `220ms` mới tua (`VoicePlayback`).
+- **Tốc độ ăn theo WPM**: `speed = wpm / nativeWpm`, đặt vào `just_audio` (giữ
+  nguyên cao độ).
+- **Sàn `kVoiceMinWpm = 90`.** Audio render ở ~100 wpm nên khi phát chỉ việc
+  tăng tốc; kéo chậm quá nhiều thì méo tiếng. Vào chế độ này mà WPM đang thấp
+  hơn thì nâng luôn giá trị đã lưu, không để sheet và tiếng nói hai số khác nhau.
+- Bài **chưa có** file giọng: mục `VOICE` trong sheet bị mờ đi; nếu preference
+  đang là `VOICE` thì rơi về chạy chữ im lặng, không chặn người học.
 
 ## 3. Màn hình
 
@@ -89,7 +120,7 @@ Yêu cầu hành vi:
 
 ### 3.4 Sheet cài đặt buổi luyện (`player/settings/`)
 
-Bottom sheet, mở từ Player. Nội dung: tốc độ (slider WPM + 4 preset), độ dài đoạn (lọc bài kế tiếp), kiểu chạy chữ (3 lựa chọn), cỡ chữ (slider 20–40sp), giữ màn hình sáng (toggle), nút Áp dụng.
+Bottom sheet, mở từ Player. Nội dung: tốc độ (slider WPM + 4 preset), độ dài đoạn (lọc bài kế tiếp), kiểu chạy chữ (4 lựa chọn), cỡ chữ (slider 20–40sp), giữ màn hình sáng (toggle), nút Áp dụng. Khi đang chọn `VOICE`, slider WPM bắt đầu từ 90 và preset dưới mức đó bị ẩn.
 
 Thay đổi áp dụng **ngay khi chỉnh**, nút Áp dụng chỉ để đóng sheet. Đừng bắt người dùng bấm Áp dụng mới thấy hiệu quả — họ cần thấy tốc độ đổi để chọn.
 
@@ -151,7 +182,7 @@ Home ──► Topic ──► Player ──► SettingsSheet
 ]
 ```
 
-**`body` là mảng câu, không phải một chuỗi dài.** Cả 3 kiểu chạy chữ, việc snap khi tua, và ghi âm theo câu ở v2 đều cần ranh giới câu. Tách câu ở runtime bằng regex là nguồn bug (dấu chấm trong `Mr.`, `U.S.`, số thập phân).
+**`body` là mảng câu, không phải một chuỗi dài.** Cả 4 kiểu chạy chữ, việc snap khi tua, giọng đọc render theo câu, và ghi âm theo câu ở v2 đều cần ranh giới câu. Tách câu ở runtime bằng regex là nguồn bug (dấu chấm trong `Mr.`, `U.S.`, số thập phân).
 
 `wordCount` tính sẵn khi tạo nội dung, đừng đếm lại lúc chạy.
 
@@ -197,7 +228,10 @@ v1: `AssetsContentRepository` đọc JSON. v2: `RemoteContentRepository` gọi A
 
 ## 7. Chuẩn bị cho v2 (không code ở v1)
 
-Ghi âm nhại theo · so sánh waveform · chấm điểm phát âm · TTS đọc mẫu · backend API · offline cache · thông báo nhắc streak.
+Ghi âm nhại theo · so sánh waveform · chấm điểm phát âm · backend API · offline cache · thông báo nhắc streak.
+
+(Giọng đọc mẫu đã làm ở v1 dưới dạng audio render sẵn — xem 2.4. Phần TTS sinh
+lúc chạy vẫn để v2 nếu cần nội dung động.)
 
 Hai thứ cần làm đúng **ngay từ v1** để v2 không phải viết lại:
 - `body` tách sẵn theo câu → v2 ghi âm và chấm điểm theo từng câu.
