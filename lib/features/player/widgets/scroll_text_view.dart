@@ -5,11 +5,10 @@ import '../playback/playback_timeline.dart';
 
 const double _sentenceGap = AppSpacing.sm;
 const double _sentencePaddingV = AppSpacing.md;
-const double _bandPaddingH = AppSpacing.lg;
-const double _ruleWidth = 3;
+const double _sentencePaddingH = AppSpacing.lg;
 
-/// Toàn bộ text trôi đều từ dưới lên, câu đang đọc nằm giữa màn trong band
-/// màu của topic. Vị trí cuộn suy ra từ `elapsedMs` qua bảng timing — renderer
+/// Toàn bộ text trôi đều từ dưới lên, câu đang đọc nằm giữa màn. Không đánh dấu
+/// câu hiện tại. Vị trí cuộn suy ra từ `elapsedMs` qua bảng timing — renderer
 /// không giữ bộ đếm riêng.
 class ScrollTextView extends StatelessWidget {
   const ScrollTextView({
@@ -17,17 +16,17 @@ class ScrollTextView extends StatelessWidget {
     required this.timeline,
     required this.elapsedMs,
     required this.fontSizeSp,
-    required this.accent,
   });
 
   final PlaybackTimeline timeline;
   final int elapsedMs;
   final double fontSizeSp;
-  final AccentColor accent;
 
   @override
   Widget build(BuildContext context) {
-    final style = AppTypography.practice(fontSizeSp);
+    final style = AppTypography.practice(
+      fontSizeSp,
+    ).copyWith(color: context.colors.ink);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -59,15 +58,19 @@ class ScrollTextView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (var i = 0; i < timeline.sentences.length; i++)
+                    for (final sentence in timeline.sentences)
                       Padding(
                         padding: const EdgeInsets.only(bottom: _sentenceGap),
-                        child: _SentenceBand(
-                          text: timeline.sentences[i].text,
-                          style: style,
-                          accent: accent,
-                          distance: (i - current).abs(),
-                          isCurrent: i == current,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: _sentencePaddingH,
+                            vertical: _sentencePaddingV,
+                          ),
+                          child: Text(
+                            sentence.text,
+                            textAlign: TextAlign.center,
+                            style: style,
+                          ),
                         ),
                       ),
                   ],
@@ -77,59 +80,6 @@ class ScrollTextView extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _SentenceBand extends StatelessWidget {
-  const _SentenceBand({
-    required this.text,
-    required this.style,
-    required this.accent,
-    required this.distance,
-    required this.isCurrent,
-  });
-
-  final String text;
-  final TextStyle style;
-  final AccentColor accent;
-  final int distance;
-  final bool isCurrent;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final opacity = switch (distance) {
-      0 => 1.0,
-      1 => 0.45,
-      2 => 0.26,
-      _ => 0.14,
-    };
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isCurrent ? accent.tint : null,
-          // Viền trái luôn chiếm chỗ dù trong suốt: nếu không, bề rộng chữ đổi
-          // theo từng câu và chiều cao đo trước sẽ lệch layout thật.
-          border: Border(
-            left: BorderSide(
-              width: _ruleWidth,
-              color: isCurrent ? accent.base : Colors.transparent,
-            ),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: _bandPaddingH,
-          vertical: _sentencePaddingV,
-        ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: style.copyWith(color: colors.ink.withValues(alpha: opacity)),
-        ),
-      ),
     );
   }
 }
@@ -148,7 +98,7 @@ class _SentenceMetrics {
     required double maxWidth,
     required TextScaler textScaler,
   }) {
-    final contentWidth = maxWidth - _ruleWidth - _bandPaddingH * 2;
+    final contentWidth = maxWidth - _sentencePaddingH * 2;
     final heights = <double>[];
     final tops = <double>[];
 

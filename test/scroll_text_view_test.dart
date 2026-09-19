@@ -34,7 +34,6 @@ Future<void> _pumpAt(WidgetTester tester, int elapsedMs, PlaybackTimeline t) {
             timeline: t,
             elapsedMs: elapsedMs,
             fontSizeSp: 29,
-            accent: AppColors.light.clay,
           ),
         ),
       ),

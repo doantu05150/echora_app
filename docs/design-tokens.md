@@ -48,8 +48,9 @@ Chữ trắng chỉ đặt trên `violet`. **Không** đặt chữ nhỏ màu tr
 
 Fallback: `system-ui` / `sans-serif`. Nhớ bundle 2 font vào `res/font/`.
 
-Text luyện tập **căn giữa**. Các câu chưa/đã đọc dùng cùng màu `ink` với alpha giảm dần:
-`0.45` (câu liền kề) → `0.26` → `0.14`. Câu đang đọc: alpha `1.0`, nằm trong band nền tint của topic, viền trái 3dp màu đậm của topic.
+Text luyện tập **căn giữa**. Chế độ cuộn đều: mọi câu cùng màu `ink`, alpha `1.0`,
+không tô nền và không đánh dấu câu đang đọc — chỉ có chuyển động cuộn.
+Hai chế độ còn lại (line, karaoke) vẫn highlight theo màu topic.
 
 ## Spacing
 

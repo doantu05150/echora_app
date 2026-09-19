@@ -84,7 +84,6 @@ class _PlayerBody extends ConsumerWidget {
                   timeline: state.timeline,
                   elapsedMs: elapsedMs,
                   fontSizeSp: state.fontSizeSp,
-                  accent: accent,
                 ),
                 DisplayMode.line => LineTextView(
                   timeline: state.timeline,
