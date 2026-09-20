@@ -10,7 +10,7 @@ const double _sentencePaddingH = AppSpacing.lg;
 /// Toàn bộ text trôi đều từ dưới lên, câu đang đọc nằm giữa màn. Không đánh dấu
 /// câu hiện tại. Vị trí cuộn suy ra từ `elapsedMs` qua bảng timing — renderer
 /// không giữ bộ đếm riêng.
-class ScrollTextView extends StatelessWidget {
+class ScrollTextView extends StatefulWidget {
   const ScrollTextView({
     super.key,
     required this.timeline,
@@ -23,25 +23,96 @@ class ScrollTextView extends StatelessWidget {
   final double fontSizeSp;
 
   @override
+  State<ScrollTextView> createState() => _ScrollTextViewState();
+}
+
+/// Widget này rebuild mỗi frame nên mọi thứ không đổi theo thời gian đều phải
+/// tính sẵn: đo chiều cao câu bằng `TextPainter` và dựng cây câu chữ. Làm lại
+/// hai việc đó ở nhịp 120Hz là đủ để rớt frame.
+class _ScrollTextViewState extends State<ScrollTextView> {
+  _SentenceMetrics? _metrics;
+  Widget? _sentences;
+
+  double _forWidth = 0;
+  double _forFontSize = 0;
+  TextScaler _forScaler = TextScaler.noScaling;
+  List<SentenceSpan>? _forSentences;
+
+  void _measure(double maxWidth, TextStyle style, TextScaler scaler) {
+    final sentences = widget.timeline.sentences;
+    final fresh =
+        _metrics != null &&
+        _forWidth == maxWidth &&
+        _forFontSize == widget.fontSizeSp &&
+        _forScaler == scaler &&
+        // Đổi WPM dựng lại timeline nhưng câu chữ không đổi, không cần đo lại.
+        _sameTexts(_forSentences, sentences);
+    if (fresh) return;
+
+    _forWidth = maxWidth;
+    _forFontSize = widget.fontSizeSp;
+    _forScaler = scaler;
+    _forSentences = sentences;
+
+    _metrics = _SentenceMetrics.measure(
+      sentences: sentences,
+      style: style,
+      maxWidth: maxWidth,
+      textScaler: scaler,
+    );
+
+    _sentences = RepaintBoundary(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final sentence in sentences)
+            Padding(
+              padding: const EdgeInsets.only(bottom: _sentenceGap),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: _sentencePaddingH,
+                  vertical: _sentencePaddingV,
+                ),
+                child: Text(
+                  sentence.text,
+                  textAlign: TextAlign.center,
+                  style: style,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static bool _sameTexts(List<SentenceSpan>? a, List<SentenceSpan> b) {
+    if (a == null || a.length != b.length) return false;
+    for (var i = 0; i < b.length; i++) {
+      if (a[i].text != b[i].text) return false;
+    }
+    return true;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final style = AppTypography.practice(
-      fontSizeSp,
+      widget.fontSizeSp,
     ).copyWith(color: context.colors.ink);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final metrics = _SentenceMetrics.measure(
-          sentences: timeline.sentences,
-          style: style,
-          maxWidth: constraints.maxWidth,
-          textScaler: MediaQuery.textScalerOf(context),
+        _measure(
+          constraints.maxWidth,
+          style,
+          MediaQuery.textScalerOf(context),
         );
+        final metrics = _metrics!;
 
-        final current = timeline.sentenceIndexAt(elapsedMs);
-        final span = timeline.sentences[current];
+        final current = widget.timeline.sentenceIndexAt(widget.elapsedMs);
+        final span = widget.timeline.sentences[current];
         final spanMs = (span.endMs - span.startMs).clamp(1, 1 << 30);
         final progressInSentence =
-            ((elapsedMs - span.startMs) / spanMs).clamp(0.0, 1.0);
+            ((widget.elapsedMs - span.startMs) / spanMs).clamp(0.0, 1.0);
 
         final readingY =
             metrics.tops[current] + progressInSentence * metrics.heights[current];
@@ -52,28 +123,14 @@ class ScrollTextView extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Positioned(
-                top: translateY,
+                top: 0,
                 left: 0,
                 right: 0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final sentence in timeline.sentences)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: _sentenceGap),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: _sentencePaddingH,
-                            vertical: _sentencePaddingV,
-                          ),
-                          child: Text(
-                            sentence.text,
-                            textAlign: TextAlign.center,
-                            style: style,
-                          ),
-                        ),
-                      ),
-                  ],
+                // Dời bằng Transform chứ không bằng `top`: đây là việc của lúc
+                // vẽ, không kéo theo một vòng layout mỗi frame.
+                child: Transform.translate(
+                  offset: Offset(0, translateY),
+                  child: _sentences,
                 ),
               ),
             ],

@@ -22,7 +22,12 @@ final _passage = Passage(
   body: _sentences,
 );
 
-Future<void> _pumpAt(WidgetTester tester, int elapsedMs, PlaybackTimeline t) {
+Future<void> _pumpAt(
+  WidgetTester tester,
+  int elapsedMs,
+  PlaybackTimeline t, {
+  double fontSizeSp = 29,
+}) {
   return tester.pumpWidget(
     MaterialApp(
       theme: AppTheme.light(),
@@ -33,7 +38,7 @@ Future<void> _pumpAt(WidgetTester tester, int elapsedMs, PlaybackTimeline t) {
           child: ScrollTextView(
             timeline: t,
             elapsedMs: elapsedMs,
-            fontSizeSp: 29,
+            fontSizeSp: fontSizeSp,
           ),
         ),
       ),
@@ -67,6 +72,26 @@ void main() {
     final rect = tester.getRect(find.text(_sentences[1]));
     expect(rect.top, lessThanOrEqualTo(300));
     expect(rect.bottom, greaterThanOrEqualTo(300));
+  });
+
+  testWidgets('advancing time reuses the sentence widgets', (tester) async {
+    await _pumpAt(tester, 0, timeline);
+    final before = tester.widget<Text>(find.text(_sentences[0]));
+
+    await _pumpAt(tester, timeline.sentences[2].startMs, timeline);
+    final after = tester.widget<Text>(find.text(_sentences[0]));
+
+    expect(identical(before, after), isTrue);
+  });
+
+  testWidgets('changing the font size does rebuild them', (tester) async {
+    await _pumpAt(tester, 0, timeline);
+    final before = tester.widget<Text>(find.text(_sentences[0]));
+
+    await _pumpAt(tester, 0, timeline, fontSizeSp: 34);
+    final after = tester.widget<Text>(find.text(_sentences[0]));
+
+    expect(identical(before, after), isFalse);
   });
 
   testWidgets('text scrolls up as time advances', (tester) async {
